@@ -178,6 +178,7 @@
   "strobeLevel":                {"type": "select", "enum": ["low", "medium", "high", "max"], "icon": "mdi:alarm-light"},
   "switchMode":                 {"type": "select", "enum": ["on", "off", "toggle"]},
   "switchType":                 {"type": "select", "enum": ["toggle", "momentary", "multifunction"]},
+  "turboMode":                  {"type": "select", "enum": ["on", "off"]},
   "timeoutMode":                {"type": "select", "enum": ["10s", "30s", "60s", "120s"], "icon": "mdi:timer"},
   "volumeMode":                 {"type": "select", "enum": ["low", "medium", "high"], "icon": "mdi:volume-high"},
   "weekMode":                   {"type": "select", "enum": ["5+2", "6+1", "7+0"], "icon": "mdi:calendar-week"},
