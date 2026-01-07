@@ -1,5 +1,6 @@
 #include <QRandomGenerator>
 #include <QStack>
+#include <QXmlStreamReader>
 #include "parser.h"
 
 Expression::Expression(QString string) : m_result(NAN)
@@ -303,6 +304,23 @@ QString Parser::urlValue(const QByteArray &string, const QString &key)
     return QString();
 }
 
+QString Parser::xmlValue(const QByteArray &string, const QString &key)
+{
+    QXmlStreamReader reader(string);
+
+    while (!reader.atEnd())
+    {
+        reader.readNext();
+
+        if (!reader.isStartElement() || reader.name() != key)
+            continue;
+
+        return reader.readElementText();
+    }
+
+    return QString();
+}
+
 QVariant Parser::stringValue(const QString &string)
 {
     bool check;
@@ -312,7 +330,45 @@ QVariant Parser::stringValue(const QString &string)
         return value;
 
     if (string == "true" || string == "false")
-        return string == "true" ? true : false;
+        return string == "true";
 
     return string.isEmpty() ? QVariant() : string;
+}
+
+void Parser::checkConditions(QList<QString> &list, const QString empty)
+{
+    QList <QString> operatorList = {"is", "not", "==", "!=", ">", ">=", "<", "<="}, controlList = {"defined", "undefined", "number"};
+
+    while (list.count() >= 7 && list.at(1) == "if" && list.at(5) == "else")
+    {
+        int index = operatorList.indexOf(list.at(3));
+        bool check = false;
+
+        switch (index)
+        {
+            case 0: // is
+            case 1: // not
+
+                switch (controlList.indexOf(list.at(4)))
+                {
+                    case 0: check = list.at(2) != empty; break; // defined
+                    case 1: check = list.at(2) == empty; break; // undefined
+                    case 2: list.at(2).toDouble(&check); break; // number
+                }
+
+                if (index)
+                    check = !check;
+
+                break;
+
+            case 2: check = list.at(2) == list.at(4); break;
+            case 3: check = list.at(2) != list.at(4); break;
+            case 4: check = list.at(2).toDouble() > list.at(4).toDouble(); break;
+            case 5: check = list.at(2).toDouble() >= list.at(4).toDouble(); break;
+            case 6: check = list.at(2).toDouble() < list.at(4).toDouble(); break;
+            case 7: check = list.at(2).toDouble() <= list.at(4).toDouble(); break;
+        }
+
+        list = check ? list.mid(0, 1) : list.mid(6);
+    }
 }
